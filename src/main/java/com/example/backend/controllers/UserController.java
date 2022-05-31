@@ -4,6 +4,7 @@ import com.example.backend.models.User;
 import com.example.backend.requests.LoginRequest;
 import com.example.backend.requests.ProductRequest;
 import com.example.backend.requests.UserRequest;
+import com.example.backend.response.Message;
 import com.example.backend.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,8 +29,19 @@ public class UserController {
 
     @PostMapping("login")
     public ResponseEntity<?> logIn(@RequestBody LoginRequest user){
+        UserRequest userRequest = new UserRequest();
+        userRequest = userService.logInUser(user);
+        if(userRequest == null){
+            return ResponseEntity.badRequest().body(new Message("Неверно введён логин или пароль"));
+        }
+        else
+        {
+            if(userService.isEmailConfirmed(user.getEmail())){
+                return ResponseEntity.ok(userRequest);
+            }
+            return ResponseEntity.badRequest().body(new Message("Вы не подтвердили Вашу почту!"));
+        }
 
-        return ResponseEntity.ok(userService.logInUser(user));
     }
 
     @GetMapping("getFreshInfoAboutUser/{id}")
@@ -51,4 +63,11 @@ public class UserController {
     public void upUserStatus(@PathVariable Long id){
         userService.upUserStatus(id);
     }
+
+    @GetMapping("regitrationConfirm")
+    public void confirmRegistration(@RequestParam("token") String token) {
+        userService.confirmRegistration(token);
+    }
+
+
 }

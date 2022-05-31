@@ -32,6 +32,12 @@ public class User implements UserDetails {
     @Column(name = "password", length = 1000)
     private String password;
 
+    @Column(name = "isConfirmed")
+    private boolean isConfirmed;
+
+    @Column(name = "token", length = 1000)
+    private String token;
+
     private LocalDateTime dateOfCreation;
 
     @PrePersist
