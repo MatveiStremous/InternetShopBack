@@ -19,10 +19,7 @@ public class Cart {
     private User user;
 
     @ManyToOne(cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
-//    @JsonIdentityInfo(
-//            generator = ObjectIdGenerators.PropertyGenerator.class,
-//            property = "id")
-    //@JsonManagedReference
+
     private Product product;
 
     @Column(name="quantity")

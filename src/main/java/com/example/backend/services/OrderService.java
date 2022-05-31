@@ -5,7 +5,6 @@ import com.example.backend.models.Order;
 import com.example.backend.models.enums.OrderStatus;
 import com.example.backend.repositories.CartRepository;
 import com.example.backend.repositories.OrderRepository;
-import com.example.backend.repositories.ProductRepository;
 import com.example.backend.repositories.UserRepository;
 import com.example.backend.requests.OrderRequest;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -35,12 +35,51 @@ public class OrderService {
         long size = userCarts.size();
         for (int i = 0; i < size; i++) {
             totalPrice=totalPrice+userCarts.get(i).getProduct().getPrice()*userCarts.get(i).getQuantity();
-            content = content + "#"+ userCarts.get(i).getProduct().getId() + " " + userCarts.get(i).getProduct().getTitle()+ " x " +userCarts.get(i).getQuantity()+"; ";
+            content = content + "#"+ userCarts.get(i).getProduct().getId() + " "
+                    + userCarts.get(i).getProduct().getTitle()+ " x " +userCarts.get(i).getQuantity()+"; ";
             cartRepository.deleteById(userCarts.get(i).getId());
         }
         order.setContent(content);
         order.setTotalPrice(totalPrice);
 
+        orderRepository.save(order);
+    }
+
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    public void downOrderStatus(Long id) {
+        Order order = orderRepository.findById(id).orElse(null);
+        if(order.getOrderStatus().equals(OrderStatus.COMPLETED)){
+            order.setOrderStatus(OrderStatus.SENT);
+        }
+        else if(order.getOrderStatus().equals(OrderStatus.SENT)){
+            order.setOrderStatus(OrderStatus.ACCEPTED);
+        }
+        else if(order.getOrderStatus().equals(OrderStatus.ACCEPTED)){
+            order.setOrderStatus(OrderStatus.AWAITING);
+        }
+        else if(order.getOrderStatus().equals(OrderStatus.AWAITING)){
+            order.setOrderStatus(OrderStatus.CANCELED);
+        }
+        orderRepository.save(order);
+    }
+
+    public void upOrderStatus(Long id) {
+        Order order = orderRepository.findById(id).orElse(null);
+        if(order.getOrderStatus().equals(OrderStatus.CANCELED)){
+            order.setOrderStatus(OrderStatus.AWAITING);
+        }
+        else if(order.getOrderStatus().equals(OrderStatus.AWAITING)){
+            order.setOrderStatus(OrderStatus.ACCEPTED);
+        }
+        else if(order.getOrderStatus().equals(OrderStatus.ACCEPTED)){
+            order.setOrderStatus(OrderStatus.SENT);
+        }
+        else if(order.getOrderStatus().equals(OrderStatus.SENT)){
+            order.setOrderStatus(OrderStatus.COMPLETED);
+        }
         orderRepository.save(order);
     }
 }

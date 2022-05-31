@@ -1,9 +1,13 @@
 package com.example.backend.controllers;
 
+import com.example.backend.models.Order;
 import com.example.backend.requests.OrderRequest;
+import com.example.backend.requests.UserRequest;
 import com.example.backend.services.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/")
@@ -18,6 +22,20 @@ public class OrderController {
         return "Your order is formed!";
     }
 
+    @GetMapping("getAllOrders")
+    public List<Order> getAllOrders(){
+        return  orderService.getAllOrders();
+    }
+
+    @PostMapping("downOrderStatus/{id}")
+    public void downOrderStatus(@PathVariable Long id){
+        orderService.downOrderStatus(id);
+    }
+
+    @PostMapping("upOrderStatus/{id}")
+    public void upOrderStatus(@PathVariable Long id){
+        orderService.upOrderStatus(id);
+    }
 
 }
 

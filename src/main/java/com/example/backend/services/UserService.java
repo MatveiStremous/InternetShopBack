@@ -7,11 +7,17 @@ import com.example.backend.requests.LoginRequest;
 import com.example.backend.requests.UserRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -20,20 +26,31 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
+    public JavaMailSender emailSender;
+
     public boolean createUser(User user) {
         String email = user.getEmail();
-        if (userRepository.findByEmail(email) != null) return false;
+        if (userRepository.findByEmail(email.toLowerCase()) != null) return false;
         user.setActive(true);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(Role.USER_ROLE);//getRole().add(Role.USER_ROLE);
+        user.setRole(Role.USER_ROLE);
+        user.setEmail(user.getEmail().toLowerCase());
+        user.setConfirmed(false);
+        user.setToken(UUID.randomUUID().toString());
         userRepository.save(user);
+
+        CompletableFuture<Void> cf = CompletableFuture.runAsync(() -> {
+            sendSimpleEmail(email, user.getToken());
+        });
+
         log.info("Saving new User with email: {}", email);
         return true;
     }
 
     public UserRequest logInUser(LoginRequest loginRequest) {
-        User user = userRepository.findByEmail(loginRequest.getEmail());
-
+        User user = userRepository.findByEmail(loginRequest.getEmail().toLowerCase());
+        if(user == null) return null;
         if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             UserRequest userRequest = new UserRequest();
             userRequest.setEmail(user.getEmail());
@@ -44,6 +61,10 @@ public class UserService {
             return userRequest;
         }
         return null;
+    }
+
+    public boolean isEmailConfirmed(String email) {
+        return userRepository.findByEmail(email.toLowerCase()).isConfirmed();
     }
 
     public UserRequest getUserInfoById(Long id) {
@@ -97,6 +118,22 @@ public class UserService {
         } else if (!user.isEnabled()) {
             user.setActive(true);
         }
+        userRepository.save(user);
+    }
+
+    public void sendSimpleEmail(String email, String token) {
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setSubject("Test Simple Email");
+        message.setText("Hello! Click " + "http://localhost:8088/regitrationConfirm?token=" + token + " to confirm your registration!");
+        this.emailSender.send(message);
+    }
+
+    public void confirmRegistration(String token) {
+        User user = userRepository.findByToken(token);
+        user.setToken("");
+        user.setConfirmed(true);
         userRepository.save(user);
     }
 }

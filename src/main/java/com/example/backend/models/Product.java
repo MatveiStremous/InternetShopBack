@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 public class Product {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="id")
     private Long id;
 
@@ -42,18 +42,13 @@ public class Product {
     @Column(name="materials")
     private String materials;
 
-    @Column(name="quantity")
-    private int quantity;
-
     @PrePersist
     private void init(){
         dateOfCreation=LocalDateTime.now();
     }
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "product")
-    //@JsonBackReference
-//    @JsonIdentityInfo(
-//            generator = ObjectIdGenerators.PropertyGenerator.class,
-//            property = "id")
+
+    @JsonIgnore
     private List<Cart> carts = new ArrayList<>();
 }
