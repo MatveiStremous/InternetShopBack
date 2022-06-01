@@ -49,6 +49,10 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
+    public List<Order> getOrdersByUserId(Long userId) {
+        return orderRepository.findByUserId(userId);
+    }
+
     public void downOrderStatus(Long id) {
         Order order = orderRepository.findById(id).orElse(null);
         if(order.getOrderStatus().equals(OrderStatus.COMPLETED)){
@@ -80,6 +84,12 @@ public class OrderService {
         else if(order.getOrderStatus().equals(OrderStatus.SENT)){
             order.setOrderStatus(OrderStatus.COMPLETED);
         }
+        orderRepository.save(order);
+    }
+
+    public void completeOrder(Long id) {
+        Order order = orderRepository.findById(id).orElse(null);
+        order.setOrderStatus(OrderStatus.COMPLETED);
         orderRepository.save(order);
     }
 }

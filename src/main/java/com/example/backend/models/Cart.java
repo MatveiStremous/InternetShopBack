@@ -1,6 +1,5 @@
 package com.example.backend.models;
 
-import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
 
 import javax.persistence.*;

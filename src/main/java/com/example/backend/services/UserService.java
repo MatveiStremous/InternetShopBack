@@ -125,7 +125,7 @@ public class UserService {
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-        message.setSubject("Test Simple Email");
+        message.setSubject("IRENA’S CHEST");
         message.setText("Hello! Click " + "http://localhost:8088/regitrationConfirm?token=" + token + " to confirm your registration!");
         this.emailSender.send(message);
     }

@@ -37,5 +37,15 @@ public class OrderController {
         orderService.upOrderStatus(id);
     }
 
+    @GetMapping("getUserOrders/{user_id}")
+    public List<Order> getUserOrders(@PathVariable Long user_id){
+        return  orderService.getOrdersByUserId(user_id);
+    }
+
+    @PostMapping("completeOrder/{id}")
+    public void completeOrder(@PathVariable Long id){
+        orderService.completeOrder(id);
+    }
+
 }
 
